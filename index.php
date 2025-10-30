@@ -34,7 +34,7 @@ if ($path === '/' || $path === '') {
 }
 
 // Load the site configuration
- $jsonFile = __DIR__ . '/admin/layout/index-control/site.json';
+ $jsonFile = __DIR__ . '/admin/site.json';
 if (!file_exists($jsonFile)) {
     http_response_code(500);
     die("Site configuration not found");
