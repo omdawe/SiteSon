@@ -1,13 +1,41 @@
 <?php
 // Get the correct path to site.json
- $jsonFile = __DIR__ . '/site.json';
+$jsonFile = __DIR__ . '/site.json';
 
-// Check if file exists
+// If file does not exist, create a new one with default structure
 if (!file_exists($jsonFile)) {
-    die("site.json file not found at: " . $jsonFile);
+    $defaultConfig = [
+        'site' => [
+            'name' => 'My Website',
+            'logo' => '/images/logo.png',
+            'favicon' => '/favicon.ico',
+            'meta' => [
+                'description' => 'Default website description.',
+                'keywords' => 'default, keywords'
+            ]
+        ],
+        'pages' => [],
+        'templates' => [],
+        'menus' => [
+            'main' => [
+                ['text' => 'Home', 'url' => '/'],
+                ['text' => 'About', 'url' => '/about'],
+                ['text' => 'Contact', 'url' => '/contact']
+            ]
+        ],
+        'settings' => [
+            'whatsapp' => [
+                'number' => '',
+                'active' => false
+            ]
+        ]
+    ];
+
+    file_put_contents($jsonFile, json_encode($defaultConfig, JSON_PRETTY_PRINT));
 }
 
- $siteConfig = json_decode(file_get_contents($jsonFile), true);
+// Load and decode JSON
+$siteConfig = json_decode(file_get_contents($jsonFile), true);
 
 // Check if JSON was parsed correctly
 if ($siteConfig === null) {
