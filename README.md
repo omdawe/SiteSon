@@ -1,8 +1,8 @@
 How SiteSon Works
 
-index.php — Reads all page content, menus, and meta info directly from site.json.
+index.php - Reads all page content, menus, and meta info directly from site.json.
 
-site.json — Stores your entire website: pages, templates, menus, SEO data, WhatsApp number, anything you want.
+site.json - Stores your entire website: pages, templates, menus, SEO data, anything you want.
 
 admin/SiteSon/index.php — Lets you easily edit and save everything inside the JSON without touching any code.
 
