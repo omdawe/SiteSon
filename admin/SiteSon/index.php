@@ -47,6 +47,24 @@ if (!file_exists($jsonFile)) {
                 'phpCode' => '',
                 'customCss' => '',
                 'customJs' => ''
+            ],
+            '/404' => [
+                'title' => 'Page Not Found',
+                'content' => '<div class="text-center py-5">
+    <h1 class="display-1">404</h1>
+    <h2>Page Not Found</h2>
+    <p class="lead">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+    <hr>
+    <p>Please check the URL and try again, or return to the homepage.</p>
+    <a href="/" class="btn btn-primary">Go to Homepage</a>
+</div>',
+                'meta' => [
+                    'description' => 'The page you are looking for could not be found.',
+                    'keywords' => '404, not found, error'
+                ],
+                'phpCode' => '',
+                'customCss' => '',
+                'customJs' => ''
             ]
         ],
         'templates' => [
