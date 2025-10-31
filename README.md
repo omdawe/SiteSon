@@ -3,7 +3,7 @@ How SiteSon Works
 .htaccess - Handles clean URLs like /about, /contact, /products/tshirt.
 index.php - Reads all page content, menus, and meta info directly from site.json.
 admin/SiteSon/site.json - Stores your entire website: pages, templates, menus, SEO data, anything you want.
-admin/SiteSon/index.php — Lets you easily edit and save everything inside the JSON without touching any code.
+admin/SiteSon/index.php - Lets you easily edit and save everything inside the JSON without touching any code.
 
 When a user visits your site, PHP simply loads site.json, finds the requested page, and displays it using your HTML structure and templates.
 
