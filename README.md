@@ -4,7 +4,7 @@ index.php — Reads all page content, menus, and meta info directly from site.js
 
 site.json — Stores your entire website: pages, templates, menus, SEO data, WhatsApp number, anything you want.
 
-admin/index.php — Lets you easily edit and save everything inside the JSON without touching any code.
+admin/SiteSon/index.php — Lets you easily edit and save everything inside the JSON without touching any code.
 
 .htaccess — Handles clean URLs like /about, /contact, /products/tshirt.
 
