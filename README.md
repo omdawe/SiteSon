@@ -1,4 +1,3 @@
-![SiteSon backend edit system](https://github.com/user-attachments/assets/b49b5152-6e44-4dd5-b461-22dba65bb1c0)
 How SiteSon Works
 
 .htaccess - Handles clean URLs like /about, /contact, /products/tshirt.
@@ -54,4 +53,4 @@ Prototypes or client mockups
 ![SitSon Front end](https://github.com/user-attachments/assets/828685ee-bfac-4a8a-8794-aec20945e223)
 ![SiteSon v2 backend](https://github.com/user-attachments/assets/b8b5d699-422b-4bfa-96e7-f2e5c8477d54)
 ![SiteSon 2 backend template](https://github.com/user-attachments/assets/c240f6e0-5826-469d-ae42-827ac67f95a1)
-
+![SiteSon backend edit system](https://github.com/user-attachments/assets/b49b5152-6e44-4dd5-b461-22dba65bb1c0)
