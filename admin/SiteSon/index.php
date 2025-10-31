@@ -252,7 +252,7 @@ if (!file_exists($jsonFile)) {
 }
 
 // Load and decode JSON
-$siteConfig = json_decode(file_get_contents($jsonFile), true);
+ $siteConfig = json_decode(file_get_contents($jsonFile), true);
 
 // Check if JSON was parsed correctly
 if ($siteConfig === null) {
@@ -400,15 +400,72 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
     <style>
-        body { padding: 20px; }
-        .sidebar { border-right: 1px solid #ddd; padding-right: 20px; }
-        .main-content { padding-left: 20px; }
-        .page-list { margin-bottom: 20px; }
-        .page-list .page-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        body { 
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,.75);
+            padding: 10px 20px;
+            border-radius: 0;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,.1);
+        }
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: #007bff;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .sidebar .dropdown-menu {
+            background-color: #343a40;
+            border: none;
+            padding: 0;
+        }
+        .sidebar .dropdown-item {
+            color: rgba(255,255,255,.75);
+            padding: 10px 20px 10px 40px;
+        }
+        .sidebar .dropdown-item:hover {
+            color: white;
+            background-color: rgba(255,255,255,.1);
+        }
+        .sidebar .dropdown-item.active {
+            color: white;
+            background-color: #007bff;
+        }
+        .sidebar .dropdown-divider {
+            border-color: rgba(255,255,255,.1);
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .page-list .page-item { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         .page-list .page-item:last-child { border-bottom: none; }
         .page-list .page-item.active { background-color: #f8f9fa; }
         .template-list { margin-bottom: 20px; }
-        .template-list .template-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .template-list .template-item { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         .template-list .template-item:last-child { border-bottom: none; }
         .editor-wrapper { 
             margin-bottom: 20px; 
@@ -498,143 +555,197 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
             display: flex;
             gap: 5px;
         }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            font-weight: bold;
+        }
+        .btn-group .btn {
+            border-radius: 0;
+        }
+        .btn-group .btn:first-child {
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+        .btn-group .btn:last-child {
+            border-top-right-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3 sidebar">
-                <h3>Admin Panel</h3>
+                <div class="px-3 mb-4">
+                    <h3>Admin Panel</h3>
+                </div>
                 
-                <div class="page-list">
-                    <h4>Pages</h4>
-                    <a href="?page=new" class="btn btn-sm btn-success mb-3">Add New Page</a>
-                    <div class="list-group">
-                        <?php if (isset($siteConfig['pages']) && is_array($siteConfig['pages'])): ?>
-                            <?php foreach ($siteConfig['pages'] as $path => $page): ?>
-                                <div class="page-item <?= (isset($_GET['page']) && $_GET['page'] === $path) ? 'active' : '' ?>">
-                                    <div>
-                                        <strong><?= htmlspecialchars($path) ?></strong>
-                                        <div class="text-muted"><?= htmlspecialchars($page['title']) ?></div>
-                                    </div>
-                                    <div>
-                                        <a href="?page=<?= urlencode($path) ?>" class="btn btn-sm btn-primary">Edit</a>
-                                        <form method="post" style="display: inline;">
-                                            <input type="hidden" name="action" value="delete_page">
-                                            <input type="hidden" name="path" value="<?= htmlspecialchars($path) ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this page?')">Delete</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="alert alert-warning">
-                                No pages found. <a href="?page=new" class="btn btn-sm btn-primary">Add a page</a>
-                            </div>
-                        <?php endif; ?>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link <?= (!isset($_GET['page']) && !isset($_GET['template']) && !isset($_GET['tab'])) ? 'active' : '' ?>" href="?">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-file-earmark-text"></i> Pages
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="pagesDropdown">
+                            <li><a class="dropdown-item" href="?page=new"><i class="bi bi-plus-circle"></i> Add New Page</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <?php if (isset($siteConfig['pages']) && is_array($siteConfig['pages'])): ?>
+                                <?php foreach ($siteConfig['pages'] as $path => $page): ?>
+                                    <li><a class="dropdown-item <?= (isset($_GET['page']) && $_GET['page'] === $path) ? 'active' : '' ?>" href="?page=<?= urlencode($path) ?>">
+                                        <i class="bi bi-file-earmark"></i> <?= htmlspecialchars($page['title']) ?>
+                                    </a></li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li><span class="dropdown-item-text">No pages found</span></li>
+                            <?php endif; ?>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="templatesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-code-slash"></i> Templates
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="templatesDropdown">
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'main') ? 'active' : '' ?>" href="?template=main">
+                                <i class="bi bi-file-earmark-code"></i> Main Template
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'header') ? 'active' : '' ?>" href="?template=header">
+                                <i class="bi bi-layout-header"></i> Header Template
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'menu') ? 'active' : '' ?>" href="?template=menu">
+                                <i class="bi bi-list"></i> Menu Template
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'footer') ? 'active' : '' ?>" href="?template=footer">
+                                <i class="bi bi-layout-footer"></i> Footer Template
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'whatsappButton') ? 'active' : '' ?>" href="?template=whatsappButton">
+                                <i class="bi bi-whatsapp"></i> WhatsApp Button
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'css') ? 'active' : '' ?>" href="?template=css">
+                                <i class="bi bi-filetype-css"></i> CSS Template
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['template']) && $_GET['template'] === 'javascript') ? 'active' : '' ?>" href="?template=javascript">
+                                <i class="bi bi-filetype-js"></i> JavaScript Template
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <li><a class="dropdown-item <?= (isset($_GET['tab']) && $_GET['tab'] === 'site') ? 'active' : '' ?>" href="?tab=site">
+                                <i class="bi bi-globe"></i> Site Settings
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['tab']) && $_GET['tab'] === 'menu') ? 'active' : '' ?>" href="?tab=menu">
+                                <i class="bi bi-list-nested"></i> Menu Management
+                            </a></li>
+                            <li><a class="dropdown-item <?= (isset($_GET['tab']) && $_GET['tab'] === 'settings') ? 'active' : '' ?>" href="?tab=settings">
+                                <i class="bi bi-whatsapp"></i> WhatsApp Settings
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <div class="px-3 mt-auto position-fixed bottom-0 start-0 w-25 p-3">
+                    <div class="d-grid">
+                        <a href="?page=new" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> New Page
+                        </a>
                     </div>
-                </div>
-                
-                <div class="template-list">
-                    <h4>Templates</h4>
-                    <div class="list-group">
-                        <a href="?template=main" class="list-group-item list-group-item-action">Main Template</a>
-                        <a href="?template=header" class="list-group-item list-group-item-action">Header Template</a>
-                        <a href="?template=menu" class="list-group-item list-group-item-action">Menu Template</a>
-                        <a href="?template=footer" class="list-group-item list-group-item-action">Footer Template</a>
-                        <a href="?template=whatsappButton" class="list-group-item list-group-item-action">WhatsApp Button Template</a>
-                        <a href="?template=css" class="list-group-item list-group-item-action">CSS Template</a>
-                        <a href="?template=javascript" class="list-group-item list-group-item-action">JavaScript Template</a>
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <a href="?tab=site" class="btn btn-info w-100">Site Settings</a>
-                </div>
-                
-                <div class="mb-3">
-                    <a href="?tab=menu" class="btn btn-info w-100">Edit Menu</a>
-                    <a href="?template=menu" class="btn btn-sm btn-secondary w-100 mt-1">Menu Template</a>
-                </div>
-                
-                <div class="mb-3">
-                    <a href="?tab=settings" class="btn btn-info w-100">Edit WhatsApp Number</a>
                 </div>
             </div>
             
             <div class="col-md-9 main-content">
                 <?php if ($currentPage !== null): ?>
                     <!-- Page Editor -->
-                    <h2><?= $currentPage['path'] ? 'Edit Page' : 'Add New Page' ?></h2>
-                    
-                    <form method="post">
-                        <input type="hidden" name="action" value="save_page">
-                        <input type="hidden" name="old_path" value="<?= htmlspecialchars($currentPage['path']) ?>">
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="path" class="form-label">Page URL (Path)</label>
-                                <input type="text" class="form-control" id="path" name="path" value="<?= htmlspecialchars($currentPage['path']) ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="title" class="form-label">Page Title</label>
-                                <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($currentPage['title']) ?>" required>
-                            </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <?= $currentPage['path'] ? 'Edit Page' : 'Add New Page' ?>
                         </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="meta_description" class="form-label">Meta Description</label>
-                                <input type="text" class="form-control" id="meta_description" name="meta_description" value="<?= htmlspecialchars($currentPage['meta']['description']) ?>">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="meta_keywords" class="form-label">Meta Keywords</label>
-                                <input type="text" class="form-control" id="meta_keywords" name="meta_keywords" value="<?= htmlspecialchars($currentPage['meta']['keywords']) ?>">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="editor-label">PHP Code (executed before page content)</div>
-                            <div class="editor-wrapper">
-                                <div class="editor-toolbar">
-                                    <button type="button" class="btn btn-sm btn-secondary php-fullscreen-btn">Fullscreen</button>
+                        <div class="card-body">
+                            <form method="post">
+                                <input type="hidden" name="action" value="save_page">
+                                <input type="hidden" name="old_path" value="<?= htmlspecialchars($currentPage['path']) ?>">
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="path" class="form-label">Page URL (Path)</label>
+                                        <input type="text" class="form-control" id="path" name="path" value="<?= htmlspecialchars($currentPage['path']) ?>" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="title" class="form-label">Page Title</label>
+                                        <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars($currentPage['title']) ?>" required>
+                                    </div>
                                 </div>
-                                <textarea id="php_code" name="php_code" class="form-control"><?= htmlspecialchars($currentPage['phpCode']) ?></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="editor-label">Page Content (HTML/PHP)</div>
-                            <div class="editor-wrapper">
-                                <div class="editor-toolbar">
-                                    <button type="button" class="btn btn-sm btn-secondary content-fullscreen-btn">Fullscreen</button>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="meta_description" class="form-label">Meta Description</label>
+                                        <input type="text" class="form-control" id="meta_description" name="meta_description" value="<?= htmlspecialchars($currentPage['meta']['description']) ?>">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                                        <input type="text" class="form-control" id="meta_keywords" name="meta_keywords" value="<?= htmlspecialchars($currentPage['meta']['keywords']) ?>">
+                                    </div>
                                 </div>
-                                <textarea id="content" name="content" class="form-control"><?= htmlspecialchars($currentPage['content']) ?></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="custom_css" class="form-label">Custom CSS</label>
-                                <div class="editor-wrapper">
-                                    <textarea id="custom_css" name="custom_css" class="form-control"><?= htmlspecialchars($currentPage['customCss']) ?></textarea>
+                                
+                                <div class="mb-3">
+                                    <div class="editor-label">PHP Code (executed before page content)</div>
+                                    <div class="editor-wrapper">
+                                        <div class="editor-toolbar">
+                                            <button type="button" class="btn btn-sm btn-secondary php-fullscreen-btn">Fullscreen</button>
+                                        </div>
+                                        <textarea id="php_code" name="php_code" class="form-control"><?= htmlspecialchars($currentPage['phpCode']) ?></textarea>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="custom_js" class="form-label">Custom JavaScript</label>
-                                <div class="editor-wrapper">
-                                    <textarea id="custom_js" name="custom_js" class="form-control"><?= htmlspecialchars($currentPage['customJs']) ?></textarea>
+                                
+                                <div class="mb-3">
+                                    <div class="editor-label">Page Content (HTML/PHP)</div>
+                                    <div class="editor-wrapper">
+                                        <div class="editor-toolbar">
+                                            <button type="button" class="btn btn-sm btn-secondary content-fullscreen-btn">Fullscreen</button>
+                                        </div>
+                                        <textarea id="content" name="content" class="form-control"><?= htmlspecialchars($currentPage['content']) ?></textarea>
+                                    </div>
                                 </div>
-                            </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="custom_css" class="form-label">Custom CSS</label>
+                                        <div class="editor-wrapper">
+                                            <textarea id="custom_css" name="custom_css" class="form-control"><?= htmlspecialchars($currentPage['customCss']) ?></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="custom_js" class="form-label">Custom JavaScript</label>
+                                        <div class="editor-wrapper">
+                                            <textarea id="custom_js" name="custom_js" class="form-control"><?= htmlspecialchars($currentPage['customJs']) ?></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <button type="submit" class="btn btn-primary">Save Page</button>
+                                    <?php if ($currentPage['path']): ?>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Page</button>
+                                    <?php endif; ?>
+                                </div>
+                            </form>
                         </div>
-                        
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary">Save Page</button>
-                            <?php if ($currentPage['path']): ?>
-                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Page</button>
-                            <?php endif; ?>
-                        </div>
-                    </form>
+                    </div>
                     
                     <!-- Delete Confirmation Modal -->
                     <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
@@ -661,119 +772,187 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                     
                 <?php elseif ($currentTemplate !== null): ?>
                     <!-- Template Editor -->
-                    <h2>Edit Template: <?= htmlspecialchars($currentTemplate['name']) ?></h2>
-                    
-                    <form method="post">
-                        <input type="hidden" name="action" value="save_template">
-                        <input type="hidden" name="template_name" value="<?= htmlspecialchars($currentTemplate['name']) ?>">
-                        
-                        <div class="mb-3">
-                            <div class="editor-label">Template Content</div>
-                            <div class="editor-wrapper">
-                                <div class="editor-toolbar">
-                                    <button type="button" class="btn btn-sm btn-secondary template-fullscreen-btn">Fullscreen</button>
+                    <div class="card">
+                        <div class="card-header">
+                            Edit Template: <?= htmlspecialchars($currentTemplate['name']) ?>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                <input type="hidden" name="action" value="save_template">
+                                <input type="hidden" name="template_name" value="<?= htmlspecialchars($currentTemplate['name']) ?>">
+                                
+                                <div class="mb-3">
+                                    <div class="editor-label">Template Content</div>
+                                    <div class="editor-wrapper">
+                                        <div class="editor-toolbar">
+                                            <button type="button" class="btn btn-sm btn-secondary template-fullscreen-btn">Fullscreen</button>
+                                        </div>
+                                        <textarea id="template_content" name="template_content" class="form-control"><?= htmlspecialchars($currentTemplate['content']) ?></textarea>
+                                    </div>
                                 </div>
-                                <textarea id="template_content" name="template_content" class="form-control"><?= htmlspecialchars($currentTemplate['content']) ?></textarea>
-                            </div>
+                                
+                                <div class="mb-3">
+                                    <button type="submit" class="btn btn-primary">Save Template</button>
+                                </div>
+                            </form>
                         </div>
-                        
-                        <div class="mb-3">
-                            <button type="submit" class="btn btn-primary">Save Template</button>
-                        </div>
-                    </form>
+                    </div>
                     
                 <?php elseif (isset($_GET['tab'])): ?>
                     <!-- Tab Content -->
                     <?php if ($_GET['tab'] === 'site'): ?>
                         <!-- Site Settings -->
-                        <h2>Site Settings</h2>
-                        <form method="post">
-                            <input type="hidden" name="action" value="save_site">
-                            <div class="mb-3">
-                                <label for="site_name" class="form-label">Site Name</label>
-                                <input type="text" class="form-control" id="site_name" name="site_name" value="<?= htmlspecialchars($siteConfig['site']['name']) ?>">
+                        <div class="card">
+                            <div class="card-header">
+                                Site Settings
                             </div>
-                            <div class="mb-3">
-                                <label for="site_logo" class="form-label">Logo URL</label>
-                                <input type="text" class="form-control" id="site_logo" name="site_logo" value="<?= htmlspecialchars($siteConfig['site']['logo']) ?>">
+                            <div class="card-body">
+                                <form method="post">
+                                    <input type="hidden" name="action" value="save_site">
+                                    <div class="mb-3">
+                                        <label for="site_name" class="form-label">Site Name</label>
+                                        <input type="text" class="form-control" id="site_name" name="site_name" value="<?= htmlspecialchars($siteConfig['site']['name']) ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="site_logo" class="form-label">Logo URL</label>
+                                        <input type="text" class="form-control" id="site_logo" name="site_logo" value="<?= htmlspecialchars($siteConfig['site']['logo']) ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="site_favicon" class="form-label">Favicon URL</label>
+                                        <input type="text" class="form-control" id="site_favicon" name="site_favicon" value="<?= htmlspecialchars($siteConfig['site']['favicon']) ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="site_meta_description" class="form-label">Meta Description</label>
+                                        <input type="text" class="form-control" id="site_meta_description" name="site_meta_description" value="<?= htmlspecialchars($siteConfig['site']['meta']['description']) ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="site_meta_keywords" class="form-label">Meta Keywords</label>
+                                        <input type="text" class="form-control" id="site_meta_keywords" name="site_meta_keywords" value="<?= htmlspecialchars($siteConfig['site']['meta']['keywords']) ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="mb-3">
-                                <label for="site_favicon" class="form-label">Favicon URL</label>
-                                <input type="text" class="form-control" id="site_favicon" name="site_favicon" value="<?= htmlspecialchars($siteConfig['site']['favicon']) ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="site_meta_description" class="form-label">Meta Description</label>
-                                <input type="text" class="form-control" id="site_meta_description" name="site_meta_description" value="<?= htmlspecialchars($siteConfig['site']['meta']['description']) ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label for="site_meta_keywords" class="form-label">Meta Keywords</label>
-                                <input type="text" class="form-control" id="site_meta_keywords" name="site_meta_keywords" value="<?= htmlspecialchars($siteConfig['site']['meta']['keywords']) ?>">
-                            </div>
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-primary">Save Settings</button>
-                            </div>
-                        </form>
+                        </div>
                         
                     <?php elseif ($_GET['tab'] === 'menu'): ?>
                         <!-- Menu Settings - Simplified Version -->
-                        <h2>Edit Menu</h2>
-                        <div class="alert alert-info">
-                            <strong>Instructions:</strong>
-                            <ul>
-                                <li>Drag and drop menu items to reorder them</li>
-                                <li>Edit the text and URL for each menu item</li>
-                                <li>Use the "Remove" button to delete menu items</li>
-                            </ul>
-                        </div>
-                        <form method="post" id="menu-form">
-                            <input type="hidden" name="action" value="save_menu">
-                            <input type="hidden" id="menu_items" name="menu_items" value="<?= htmlspecialchars(json_encode($siteConfig['menus']['main'])) ?>">
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Menu Items</label>
-                                <div id="menu-editor">
-                                    <!-- Menu items will be added here by JavaScript -->
-                                    <div class="alert alert-info">Loading menu items...</div>
+                        <div class="card">
+                            <div class="card-header">
+                                Menu Management
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <strong>Instructions:</strong>
+                                    <ul>
+                                        <li>Drag and drop menu items to reorder them</li>
+                                        <li>Edit the text and URL for each menu item</li>
+                                        <li>Use the "Remove" button to delete menu items</li>
+                                    </ul>
                                 </div>
-                                <button type="button" id="add-menu-item" class="btn btn-sm btn-success mt-2">Add Menu Item</button>
+                                <form method="post" id="menu-form">
+                                    <input type="hidden" name="action" value="save_menu">
+                                    <input type="hidden" id="menu_items" name="menu_items" value="<?= htmlspecialchars(json_encode($siteConfig['menus']['main'])) ?>">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Menu Items</label>
+                                        <div id="menu-editor">
+                                            <!-- Menu items will be added here by JavaScript -->
+                                            <div class="alert alert-info">Loading menu items...</div>
+                                        </div>
+                                        <button type="button" id="add-menu-item" class="btn btn-sm btn-success mt-2">Add Menu Item</button>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="submit" class="btn btn-primary">Save Menu</button>
+                                    </div>
+                                </form>
                             </div>
-                            
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-primary">Save Menu</button>
-                            </div>
-                        </form>
+                        </div>
                         
                     <?php elseif ($_GET['tab'] === 'settings'): ?>
                         <!-- Other Settings -->
-                        <h2>Edit WhatsApp Number</h2>
-                        <form method="post">
-                            <input type="hidden" name="action" value="save_settings">
-                            
-                            <div class="mb-3">
-                                <h4>WhatsApp Settings</h4>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="whatsapp_active" name="whatsapp_active" <?= isset($siteConfig['settings']['whatsapp']['active']) && $siteConfig['settings']['whatsapp']['active'] ? 'checked' : '' ?>>
-                                    <label class="form-check-label" for="whatsapp_active">
-                                        Enable WhatsApp Button
-                                    </label>
-                                </div>
+                        <div class="card">
+                            <div class="card-header">
+                                WhatsApp Settings
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="whatsapp_number" class="form-label">WhatsApp Number</label>
-                                <input type="text" class="form-control" id="whatsapp_number" name="whatsapp_number" value="<?= htmlspecialchars($siteConfig['settings']['whatsapp']['number']) ?>">
+                            <div class="card-body">
+                                <form method="post">
+                                    <input type="hidden" name="action" value="save_settings">
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="whatsapp_active" name="whatsapp_active" <?= isset($siteConfig['settings']['whatsapp']['active']) && $siteConfig['settings']['whatsapp']['active'] ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="whatsapp_active">
+                                                Enable WhatsApp Button
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="whatsapp_number" class="form-label">WhatsApp Number</label>
+                                        <input type="text" class="form-control" id="whatsapp_number" name="whatsapp_number" value="<?= htmlspecialchars($siteConfig['settings']['whatsapp']['number']) ?>">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                                    </div>
+                                </form>
                             </div>
-                            
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-primary">Save Settings</button>
-                            </div>
-                        </form>
+                        </div>
                     <?php endif; ?>
                     
                 <?php else: ?>
                     <!-- Dashboard -->
-                    <h2>Admin Dashboard</h2>
-                    <p>Select a page to edit or choose a settings tab from the sidebar.</p>
+                    <div class="card">
+                        <div class="card-header">
+                            Admin Dashboard
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-primary mb-3">
+                                        <div class="card-header">Pages</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?= count($siteConfig['pages']) ?></h5>
+                                            <p class="card-text">Total pages on your website</p>
+                                            <a href="?page=new" class="btn btn-light">Add New Page</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-success mb-3">
+                                        <div class="card-header">Templates</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?= count($siteConfig['templates']) ?></h5>
+                                            <p class="card-text">Available templates</p>
+                                            <a href="?template=main" class="btn btn-light">Edit Templates</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card text-white bg-info mb-3">
+                                        <div class="card-header">Menu Items</div>
+                                        <div class="card-body">
+                                            <h5 class="card-title"><?= count($siteConfig['menus']['main']) ?></h5>
+                                            <p class="card-text">Items in main menu</p>
+                                            <a href="?tab=menu" class="btn btn-light">Edit Menu</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <h4>Quick Actions</h4>
+                                <div class="btn-group" role="group">
+                                    <a href="?page=new" class="btn btn-primary">Add New Page</a>
+                                    <a href="?tab=site" class="btn btn-secondary">Site Settings</a>
+                                    <a href="?tab=menu" class="btn btn-secondary">Edit Menu</a>
+                                    <a href="?tab=settings" class="btn btn-secondary">WhatsApp Settings</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
