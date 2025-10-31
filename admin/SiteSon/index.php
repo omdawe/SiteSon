@@ -192,7 +192,7 @@ if (!file_exists($jsonFile)) {
 
   <!-- Copyright -->
   <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-    &copy; 2023 Your Company Name. All Rights Reserved.
+    &copy; {year} {siteName}. All Rights Reserved.
   </div>
   <!-- Copyright -->
 </footer>
