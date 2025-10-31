@@ -1,6 +1,6 @@
 <?php
 // Get the correct path to site.json
-$jsonFile = __DIR__ . '/site.json';
+ $jsonFile = __DIR__ . '/site.json';
 
 // If file does not exist, create a new one with default structure
 if (!file_exists($jsonFile)) {
@@ -14,8 +14,225 @@ if (!file_exists($jsonFile)) {
                 'keywords' => 'default, keywords'
             ]
         ],
-        'pages' => [],
-        'templates' => [],
+        'pages' => [
+            '/' => [
+                'title' => 'Home',
+                'content' => '<h1>Welcome to Our Website</h1><p>This is the home page content. Customize this text to match your needs.</p>',
+                'meta' => [
+                    'description' => 'Welcome to our website',
+                    'keywords' => 'home, main, welcome'
+                ],
+                'phpCode' => '',
+                'customCss' => '',
+                'customJs' => ''
+            ],
+            '/about' => [
+                'title' => 'About Us',
+                'content' => '<h1>About Us</h1><p>Learn more about our company and what we do.</p>',
+                'meta' => [
+                    'description' => 'Learn about our company',
+                    'keywords' => 'about, company, information'
+                ],
+                'phpCode' => '',
+                'customCss' => '',
+                'customJs' => ''
+            ],
+            '/contact' => [
+                'title' => 'Contact Us',
+                'content' => '<h1>Contact Us</h1><p>Get in touch with us through our contact form.</p>',
+                'meta' => [
+                    'description' => 'Contact us for more information',
+                    'keywords' => 'contact, email, phone'
+                ],
+                'phpCode' => '',
+                'customCss' => '',
+                'customJs' => ''
+            ]
+        ],
+        'templates' => [
+            'main' => '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title} - {siteName}</title>
+
+    <!-- Meta Tags -->
+    <meta name="description" content="{metaDescription}">
+    <meta name="keywords" content="{metaKeywords}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{favicon}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    {headExtras}
+
+    <style>
+        {css}
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    
+    <!-- Header -->
+    <header>
+        {header}
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        {menu}
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1 py-4">
+        <div class="container">
+            {content}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-auto">
+        {footer}
+    </footer>
+
+    <!-- WhatsApp Button (floating) -->
+    {whatsappButton}
+
+    <!-- Bootstrap 5 JS (with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        {javascript}
+    </script>
+
+</body>
+</html>',
+            'header' => '<!-- Header -->
+<header class="py-3 border-bottom bg-white">
+    <div class="container d-flex flex-wrap justify-content-center justify-content-md-between align-items-center">
+        <!-- Logo -->
+        <a href="/" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
+            <img src="{logo}" alt="{siteName}" class="img-fluid" style="max-height: 60px;">
+        </a>
+    </div>
+</header>',
+            'menu' => '<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <div class="container">
+        <a class="navbar-brand d-lg-none" href="/">{siteName}</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                {menuItems}
+            </ul>
+        </div>
+    </div>
+</nav>',
+            'footer' => '<!-- Footer -->
+<footer class="bg-light text-center text-lg-start mt-4">
+  <!-- Grid container -->
+  <div class="container p-4">
+    <!--Grid row-->
+    <div class="row">
+      <!--Grid column-->
+      <div class="col-lg-4 col-md-12 mb-4 mb-md-0">
+        <h5 class="text-uppercase">About Us</h5>
+        <p>
+          We are a company dedicated to providing excellent products and services to our customers.
+        </p>
+        <p>Business Hours: 9:00 - 17:00 Mon - Fri</p>
+      </div>
+      <!--Grid column-->
+
+      <!--Grid column-->
+      <div class="col-lg-4 col-md-12 mb-4 mb-md-0">
+        <h5 class="text-uppercase">Quick Links</h5>
+        <ul class="list-unstyled">
+          <li><a href="/" class="text-decoration-none">Home</a></li>
+          <li><a href="/about" class="text-decoration-none">About</a></li>
+          <li><a href="/contact" class="text-decoration-none">Contact</a></li>
+        </ul>
+      </div>
+      <!--Grid column-->
+
+      <!--Grid column-->
+      <div class="col-lg-4 col-md-12 mb-4 mb-md-0">
+        <h5 class="text-uppercase">Contact Us</h5>
+        <p>
+          Email: <a href="mailto:info@example.com">info@example.com</a><br>
+          Phone: +1 (555) 123-4567
+        </p>
+        <div class="d-flex justify-content-center mb-3">
+          <a href="#" class="me-4 text-reset">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" class="me-4 text-reset">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="me-4 text-reset">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+      <!--Grid column-->
+    </div>
+    <!--Grid row-->
+  </div>
+  <!-- Grid container -->
+
+  <!-- Copyright -->
+  <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
+    &copy; 2023 Your Company Name. All Rights Reserved.
+  </div>
+  <!-- Copyright -->
+</footer>
+<!-- Footer -->',
+            'whatsappButton' => '<!-- WhatsApp Floating Chat Button -->
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index:1050;">
+  <a href="https://wa.me/{whatsappNumber}" target="_blank"
+     class="d-flex align-items-center justify-content-center text-white"
+     style="
+       width:65px;
+       height:65px;
+       background-color:#25D366;
+       border-radius:50%;
+       box-shadow:0 4px 10px rgba(0,0,0,0.3);
+       text-decoration:none;
+       position:relative;
+       transition:transform 0.2s ease-in-out;
+     "
+     title="Chat on WhatsApp"
+     onmouseover="this.style.transform=\'scale(1.1)\';"
+     onmouseout="this.style.transform=\'scale(1)\';">
+      <img src="/images/whatsapp-icon.png" alt="WhatsApp"
+           style="width:32px;height:32px;filter:brightness(0) invert(1);">
+      <!-- Optional small notification bubble -->
+      <span style="
+        position:absolute;
+        top:10px;
+        right:10px;
+        width:10px;
+        height:10px;
+        background-color:#fff;
+        border-radius:50%;
+        border:2px solid #25D366;
+      "></span>
+  </a>
+</div>',
+            'css' => '',
+            'javascript' => '',
+            'headExtras' => ''
+        ],
         'menus' => [
             'main' => [
                 ['text' => 'Home', 'url' => '/'],
@@ -31,7 +248,7 @@ if (!file_exists($jsonFile)) {
         ]
     ];
 
-    file_put_contents($jsonFile, json_encode($defaultConfig, JSON_PRETTY_PRINT));
+    file_put_contents($jsonFile, json_encode($defaultConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 }
 
 // Load and decode JSON
