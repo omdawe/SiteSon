@@ -549,6 +549,21 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
         .dropdown-menu {
             min-width: 200px;
         }
+        .pages-table {
+            width: 100%;
+        }
+        .pages-table th {
+            background-color: #f8f9fa;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -584,6 +599,12 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                                 <li><span class="dropdown-item-text">No pages found</span></li>
                             <?php endif; ?>
                         </ul>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link <?= (isset($_GET['tab']) && $_GET['tab'] === 'pages_list') ? 'active' : '' ?>" href="?tab=pages_list">
+                            <i class="bi bi-list-ul"></i> All Pages
+                        </a>
                     </li>
                     
                     <li class="nav-item dropdown">
@@ -777,7 +798,70 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
             
         <?php elseif (isset($_GET['tab'])): ?>
             <!-- Tab Content -->
-            <?php if ($_GET['tab'] === 'site'): ?>
+            <?php if ($_GET['tab'] === 'pages_list'): ?>
+                <!-- Pages List -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>All Pages</span>
+                        <a href="?page=new" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Add New Page
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <div class="input-group">
+                                <input type="text" id="page-search" class="form-control" placeholder="Search pages...">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped pages-table">
+                                <thead>
+                                    <tr>
+                                        <th>Page Title</th>
+                                        <th>URL Path</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pages-tbody">
+                                    <?php if (isset($siteConfig['pages']) && is_array($siteConfig['pages']) && count($siteConfig['pages']) > 0): ?>
+                                        <?php foreach ($siteConfig['pages'] as $path => $page): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($page['title']) ?></td>
+                                                <td><?= htmlspecialchars($path) ?></td>
+                                                <td><?= htmlspecialchars($page['meta']['description'] ?? '') ?></td>
+                                                <td>
+                                                    <a href="?page=<?= urlencode($path) ?>" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                    <form method="post" style="display: inline;">
+                                                        <input type="hidden" name="action" value="delete_page">
+                                                        <input type="hidden" name="path" value="<?= htmlspecialchars($path) ?>">
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this page?')">
+                                                            <i class="bi bi-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" class="text-center">No pages found</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="no-results alert alert-warning">
+                            No pages match your search criteria.
+                        </div>
+                    </div>
+                </div>
+                
+            <?php elseif ($_GET['tab'] === 'site'): ?>
                 <!-- Site Settings -->
                 <div class="card">
                     <div class="card-header">
@@ -923,6 +1007,7 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                         <h4>Quick Actions</h4>
                         <div class="btn-group" role="group">
                             <a href="?page=new" class="btn btn-primary">Add New Page</a>
+                            <a href="?tab=pages_list" class="btn btn-secondary">View All Pages</a>
                             <a href="?tab=site" class="btn btn-secondary">Site Settings</a>
                             <a href="?tab=menu" class="btn btn-secondary">Edit Menu</a>
                             <a href="?tab=settings" class="btn btn-secondary">WhatsApp Settings</a>
@@ -1347,6 +1432,40 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                 
                 // Initial render of menu items
                 renderMenuItems(menuItems);
+            }
+            
+            // Pages search functionality
+            var pageSearchInput = document.getElementById('page-search');
+            var pagesTableBody = document.getElementById('pages-tbody');
+            var noResultsMessage = document.querySelector('.no-results');
+            
+            if (pageSearchInput && pagesTableBody) {
+                pageSearchInput.addEventListener('keyup', function() {
+                    var searchTerm = this.value.toLowerCase();
+                    var rows = pagesTableBody.getElementsByTagName('tr');
+                    var visibleRows = 0;
+                    
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i];
+                        var title = row.cells[0].textContent.toLowerCase();
+                        var path = row.cells[1].textContent.toLowerCase();
+                        var description = row.cells[2].textContent.toLowerCase();
+                        
+                        if (title.includes(searchTerm) || path.includes(searchTerm) || description.includes(searchTerm)) {
+                            row.style.display = '';
+                            visibleRows++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                    
+                    // Show/hide no results message
+                    if (visibleRows === 0 && searchTerm !== '') {
+                        noResultsMessage.style.display = 'block';
+                    } else {
+                        noResultsMessage.style.display = 'none';
+                    }
+                });
             }
         });
     </script>
