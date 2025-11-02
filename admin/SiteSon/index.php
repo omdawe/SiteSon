@@ -328,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
                 
             case 'save_menu':
-                // Simplified menu saving without submenus
+                // Get the menu items from the form
                 $menuItems = json_decode($_POST['menu_items'], true);
                 if (is_array($menuItems)) {
                     // Create a simple flat menu structure
@@ -341,6 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ];
                         }
                     }
+                    // Update the menu with the new order
                     $siteConfig['menus']['main'] = $simpleMenu;
                 }
                 break;
@@ -916,7 +917,7 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                 </div>
                 
             <?php elseif ($_GET['tab'] === 'menu'): ?>
-                <!-- Menu Settings - Simplified Version -->
+                <!-- Menu Settings - Fixed Version -->
                 <div class="card">
                     <div class="card-header">
                         Menu Management
@@ -927,6 +928,7 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                             <ul>
                                 <li>Drag and drop menu items to reorder them</li>
                                 <li>Edit the text and URL for each menu item</li>
+                                <li>Use the "Open" button to preview the linked page</li>
                                 <li>Use the "Remove" button to delete menu items</li>
                             </ul>
                         </div>
@@ -1274,17 +1276,46 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                 });
             });
             
-            // Simplified Menu editor functionality
+            // Fixed Menu editor functionality
             var menuEditor = document.getElementById('menu-editor');
             var addMenuItemBtn = document.getElementById('add-menu-item');
+            var menuItemsField = document.getElementById('menu_items');
             
             if (menuEditor && addMenuItemBtn) {
                 // Get menu items from PHP
-                var menuItems = <?= json_encode($siteConfig['menus']['main']) ?>;
+                var initialMenuItems = <?= json_encode($siteConfig['menus']['main']) ?>;
                 
                 // Function to generate a unique ID for menu items
                 function generateUniqueId() {
                     return 'menu-' + Math.random().toString(36).substr(2, 9);
+                }
+                
+                // Function to get the current menu items from the DOM
+                function getCurrentMenuItems() {
+                    var items = [];
+                    var itemElements = menuEditor.querySelectorAll('.menu-item-container');
+                    
+                    itemElements.forEach(function(itemElement) {
+                        var id = itemElement.dataset.id;
+                        var textInput = itemElement.querySelector('.menu-text');
+                        var urlInput = itemElement.querySelector('.menu-url');
+                        
+                        if (textInput && urlInput) {
+                            items.push({
+                                id: id,
+                                text: textInput.value,
+                                url: urlInput.value
+                            });
+                        }
+                    });
+                    
+                    return items;
+                }
+                
+                // Function to update the hidden menu items field
+                function updateMenuItemsField() {
+                    var currentItems = getCurrentMenuItems();
+                    menuItemsField.value = JSON.stringify(currentItems);
                 }
                 
                 // Function to render menu items
@@ -1315,14 +1346,17 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                                 <span class="menu-handle">?</span>
                                 <div class="menu-item-content">
                                     <div class="row flex-grow-1">
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <input type="text" class="form-control menu-text" placeholder="Text" value="${item.text || ''}" data-id="${menuItemDiv.dataset.id}">
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <input type="text" class="form-control menu-url" placeholder="URL" value="${item.url || ''}" data-id="${menuItemDiv.dataset.id}">
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-4">
                                             <div class="menu-controls">
+                                                <button type="button" class="btn btn-sm btn-primary open-page-btn" data-id="${menuItemDiv.dataset.id}" data-url="${item.url || ''}">
+                                                    <i class="bi bi-box-arrow-up-right"></i> Open
+                                                </button>
                                                 <button type="button" class="btn btn-sm btn-danger remove-menu-item" data-id="${menuItemDiv.dataset.id}">Remove</button>
                                             </div>
                                         </div>
@@ -1345,7 +1379,7 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                         ghostClass: 'sortable-ghost',
                         dragClass: 'sortable-drag',
                         onEnd: function(evt) {
-                            updateMenuStructure();
+                            updateMenuItemsField();
                         }
                     });
                     
@@ -1358,16 +1392,33 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                     // Add change event to text inputs
                     document.querySelectorAll('.menu-text').forEach(function(input) {
                         input.addEventListener('change', function() {
-                            var id = this.getAttribute('data-id');
-                            updateMenuItem(id, 'text', this.value);
+                            updateMenuItemsField();
                         });
                     });
                     
                     // Add change event to url inputs
                     document.querySelectorAll('.menu-url').forEach(function(input) {
                         input.addEventListener('change', function() {
+                            updateMenuItemsField();
+                            // Also update the data-url attribute on the Open button
                             var id = this.getAttribute('data-id');
-                            updateMenuItem(id, 'url', this.value);
+                            var openButton = document.querySelector('.open-page-btn[data-id="' + id + '"]');
+                            if (openButton) {
+                                openButton.setAttribute('data-url', this.value);
+                            }
+                        });
+                    });
+                    
+                    // Add click event to open page buttons
+                    document.querySelectorAll('.open-page-btn').forEach(function(button) {
+                        button.addEventListener('click', function() {
+                            var url = this.getAttribute('data-url');
+                            if (url) {
+                                // Open in a new tab
+                                window.open(url, '_blank');
+                            } else {
+                                alert('Please enter a URL first');
+                            }
                         });
                     });
                     
@@ -1375,81 +1426,36 @@ if (!isset($siteConfig['menus']) || !isset($siteConfig['menus']['main'])) {
                     document.querySelectorAll('.remove-menu-item').forEach(function(button) {
                         button.addEventListener('click', function() {
                             var id = this.getAttribute('data-id');
-                            removeMenuItem(id);
+                            var menuItem = document.querySelector('.menu-item-container[data-id="' + id + '"]');
+                            if (menuItem) {
+                                menuItem.remove();
+                                updateMenuItemsField();
+                            }
                         });
                     });
                 }
                 
-                // Function to find a menu item by ID
-                function findMenuItem(id) {
-                    for (var i = 0; i < menuItems.length; i++) {
-                        if (menuItems[i].id === id) {
-                            return menuItems[i];
-                        }
-                    }
-                    return null;
-                }
-                
-                // Function to update a menu item property
-                function updateMenuItem(id, property, value) {
-                    var item = findMenuItem(id);
-                    if (item) {
-                        item[property] = value;
-                        updateMenuItemsField();
-                    }
-                }
-                
-                // Function to remove a menu item
-                function removeMenuItem(id) {
-                    for (var i = 0; i < menuItems.length; i++) {
-                        if (menuItems[i].id === id) {
-                            menuItems.splice(i, 1);
-                            break;
-                        }
-                    }
-                    renderMenuItems(menuItems);
-                    updateMenuItemsField();
-                }
-                
-                // Function to update the menu structure after drag and drop
-                function updateMenuStructure() {
-                    // Reorder the menuItems array based on the DOM order
-                    var newOrder = [];
-                    var itemElements = menuEditor.querySelectorAll('.menu-item-container');
-                    
-                    itemElements.forEach(function(itemElement) {
-                        var id = itemElement.dataset.id;
-                        var item = findMenuItem(id);
-                        if (item) {
-                            newOrder.push(item);
-                        }
-                    });
-                    
-                    menuItems = newOrder;
-                    updateMenuItemsField();
-                }
-                
-                // Function to update the hidden menu items field
-                function updateMenuItemsField() {
-                    var menuItemsField = document.getElementById('menu_items');
-                    if (menuItemsField) {
-                        menuItemsField.value = JSON.stringify(menuItems);
-                    }
-                }
-                
                 // Add event listener to add menu item button
                 addMenuItemBtn.addEventListener('click', function() {
-                    menuItems.push({
+                    // Create a new menu item
+                    var newItem = {
                         id: generateUniqueId(),
                         text: '',
                         url: ''
-                    });
-                    renderMenuItems(menuItems);
+                    };
+                    
+                    // Get the current menu items from the DOM
+                    var currentItems = getCurrentMenuItems();
+                    currentItems.push(newItem);
+                    
+                    // Re-render the menu items
+                    renderMenuItems(currentItems);
                     updateMenuItemsField();
                 });
                 
                 // Initial render of menu items
-                renderMenuItems(menuItems);
+                renderMenuItems(initialMenuItems);
+                updateMenuItemsField();
             }
             
             // Pages search functionality
